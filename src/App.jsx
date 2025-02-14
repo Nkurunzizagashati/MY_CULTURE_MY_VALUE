@@ -3,7 +3,10 @@ import HomePage from './pages/HomePage';
 import ArtfactsPage from './pages/ArtfactsPage';
 import ARViewer from './pages/ARViewer';
 import Dashboard from './pages/Dashboard';
-import { Upload } from 'lucide-react';
+import UploadsPage from './pages/UploadsPage';
+import UsersPage from './pages/UsersPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 function App() {
 	const router = createBrowserRouter([
@@ -25,7 +28,19 @@ function App() {
 		},
 		{
 			path: '/uploads',
-			element: <Upload />,
+			element: <UploadsPage />,
+		},
+		{
+			path: '/users',
+			element: <UsersPage />,
+		},
+		{
+			path: '/login',
+			element: <LoginPage />,
+		},
+		{
+			path: '/register',
+			element: <RegisterPage />,
 		},
 	]);
 	return <RouterProvider router={router} />;

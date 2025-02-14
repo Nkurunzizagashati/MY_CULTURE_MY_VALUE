@@ -1,20 +1,26 @@
 import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
 import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+import Navbar from '../components/Navbar';
 
 const ARViewer = () => {
 	const containerRef = useRef(null);
-	let axeModel = null;
-	let textMesh = null;
-	let descriptionMesh = null;
+	const location = useLocation();
+
+	// Extract model URL and description from query params
+	const params = new URLSearchParams(location.search);
+	const modelUrl = params.get('model') || '/models/default.glb';
+	const description =
+		params.get('description') || 'An ancient artifact.';
+
+	let artifactModel = null;
 
 	useEffect(() => {
 		const scene = new THREE.Scene();
-
-		// Lighting
 		const light = new THREE.AmbientLight(0xffffff, 1.5);
 		const directionalLight = new THREE.DirectionalLight(
 			0xffffff,
@@ -23,7 +29,6 @@ const ARViewer = () => {
 		directionalLight.position.set(1, 1, 1);
 		scene.add(light, directionalLight);
 
-		// Camera
 		const camera = new THREE.PerspectiveCamera(
 			75,
 			window.innerWidth / window.innerHeight,
@@ -32,7 +37,6 @@ const ARViewer = () => {
 		);
 		scene.add(camera);
 
-		// Renderer
 		const renderer = new THREE.WebGLRenderer({
 			antialias: true,
 			alpha: true,
@@ -41,23 +45,20 @@ const ARViewer = () => {
 		renderer.setPixelRatio(window.devicePixelRatio);
 		renderer.xr.enabled = true;
 
-		// Attach renderer to the div
 		if (containerRef.current) {
 			containerRef.current.appendChild(renderer.domElement);
 		}
 
-		// Add AR Button
 		document.body.appendChild(ARButton.createButton(renderer));
 
-		// Load GLTF Model
 		const loader = new GLTFLoader();
 		loader.load(
-			'/models/axe.glb',
+			modelUrl,
 			(gltf) => {
-				axeModel = gltf.scene;
-				axeModel.scale.set(0.5, 0.5, 0.5); // Adjust scale as needed
-				axeModel.position.set(0, 0, -1); // Position in front of the camera
-				scene.add(axeModel);
+				artifactModel = gltf.scene;
+				artifactModel.scale.set(0.5, 0.5, 0.5);
+				artifactModel.position.set(0, 0, -1);
+				scene.add(artifactModel);
 			},
 			undefined,
 			(error) => {
@@ -65,77 +66,65 @@ const ARViewer = () => {
 			}
 		);
 
-		// Load Font for Text
 		const fontLoader = new FontLoader();
 		fontLoader.load(
 			'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
 			(font) => {
-				// Title Text
-				const textGeometry = new TextGeometry(
-					'Ancient Battle Axe',
-					{
-						font: font,
-						size: 0.1,
-						height: 0.02,
-					}
-				);
-
 				const textMaterial = new THREE.MeshStandardMaterial({
 					color: 0xffffff,
 				});
-				textMesh = new THREE.Mesh(textGeometry, textMaterial);
-				textMesh.position.set(-0.3, 0.3, -1); // Position near the model
-				scene.add(textMesh);
 
-				// Description Text
+				// Description Text (Dynamic)
 				const descriptionGeometry = new TextGeometry(
-					'Used in ancient warfare and hunting,\ncrafted from iron and wood.',
+					description,
 					{
 						font: font,
-						size: 0.05, // Smaller text size
-						height: 0.01,
+						size: 0.03, // Decrease the font size
+						height: 0.005, // Reduce text thickness
 					}
 				);
 
-				descriptionMesh = new THREE.Mesh(
+				// Compute text bounding box to center it on the X-axis
+				descriptionGeometry.computeBoundingBox();
+				const textWidth =
+					descriptionGeometry.boundingBox.max.x -
+					descriptionGeometry.boundingBox.min.x;
+
+				const descriptionMesh = new THREE.Mesh(
 					descriptionGeometry,
 					textMaterial
 				);
-				descriptionMesh.position.set(-0.35, 0.2, -1); // Slightly lower than title
+
+				// Center the text on the X-axis
+				descriptionMesh.position.set(-textWidth / 2, 0.15, -1);
+
 				scene.add(descriptionMesh);
 			}
 		);
 
-		// AR Controller for interaction
 		const controller = renderer.xr.getController(0);
 		scene.add(controller);
 
 		controller.addEventListener('selectstart', () => {
-			if (axeModel) {
-				axeModel.rotation.y += Math.PI / 4; // Rotate axe when tapped
+			if (artifactModel) {
+				artifactModel.rotation.y += Math.PI / 4;
 			}
 		});
 
-		// Animation Loop
 		renderer.setAnimationLoop(() => {
-			if (axeModel) {
-				axeModel.rotation.y += 0.01; // Continuous rotation
+			if (artifactModel) {
+				artifactModel.rotation.y += 0.01;
 			}
 			renderer.render(scene, camera);
 		});
 
-		// Handle window resizing
 		const handleResize = () => {
-			const width = window.innerWidth;
-			const height = window.innerHeight;
-			camera.aspect = width / height;
+			camera.aspect = window.innerWidth / window.innerHeight;
 			camera.updateProjectionMatrix();
-			renderer.setSize(width, height);
+			renderer.setSize(window.innerWidth, window.innerHeight);
 		};
-
 		window.addEventListener('resize', handleResize);
 
-		// Cleanup function
 		return () => {
 			window.removeEventListener('resize', handleResize);
 			renderer.setAnimationLoop(null);
@@ -143,13 +132,16 @@ const ARViewer = () => {
 				containerRef.current.removeChild(renderer.domElement);
 			}
 		};
-	}, []);
+	}, [modelUrl, description]);
 
 	return (
-		<div
-			ref={containerRef}
-			className="bg-black w-[100vw] h-[100vh]"
-		/>
+		<div>
+			<Navbar />
+			<div
+				ref={containerRef}
+				className="bg-black w-[100vw] h-[100vh]"
+			/>
+		</div>
 	);
 };
 

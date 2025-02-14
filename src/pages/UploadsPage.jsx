@@ -1,40 +1,53 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchArtifacts, addArtifact } from '../redux/artifactSlice';
 import Card from '../customComponents/Card';
-import {
-	Upload,
-	FileText,
-	Trash,
-	Download,
-	Image,
-	Package,
-} from 'lucide-react';
+import { FileText, Trash, Download, Package } from 'lucide-react';
 import Navbar from '../components/Navbar';
 
-const initialUploads = [
-	{
-		id: 1,
-		title: 'Ancient Vase',
-		description: 'A historical vase from the 18th century.',
-		image: '/images/vase.png',
-		model: 'vase.obj',
-		size: '3.5MB',
-		date: 'Feb 12, 2025',
-		status: 'Completed',
-	},
-	{
-		id: 2,
-		title: 'Wooden Sculpture',
-		description: 'Hand-carved wooden sculpture.',
-		image: '/images/sculpture.png',
-		model: 'sculpture.glb',
-		size: '5.2MB',
-		date: 'Feb 10, 2025',
-		status: 'Processing',
-	},
-];
-
 export default function UploadsPage() {
-	const [uploads, setUploads] = useState(initialUploads);
+	const dispatch = useDispatch();
+
+	const { items: artifacts, status } = useSelector(
+		(state) => state.artifacts
+	);
+
+	console.log(`ARTIFACTS: ${artifacts}`);
+
+	const [formData, setFormData] = useState({
+		title: '',
+		description: '',
+		image: null,
+		model3D: null,
+	});
+
+	useEffect(() => {
+		dispatch(fetchArtifacts());
+	}, [dispatch]);
+
+	// Handle text input changes
+	const handleChange = (e) => {
+		setFormData({ ...formData, [e.target.name]: e.target.value });
+	};
+
+	// Handle file input changes
+	const handleFileChange = (e) => {
+		setFormData({
+			...formData,
+			[e.target.name]: e.target.files[0],
+		});
+	};
+
+	// Handle form submission
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		const data = new FormData();
+		data.append('name', formData.title);
+		data.append('description', formData.description);
+		data.append('image', formData.image);
+		data.append('model3D', formData.model3D);
+		dispatch(addArtifact(data));
+	};
 
 	return (
 		<div>
@@ -46,27 +59,38 @@ export default function UploadsPage() {
 
 				{/* Upload Form */}
 				<Card title="Upload New Artifact">
-					<form className="space-y-4">
+					<form onSubmit={handleSubmit} className="space-y-4">
 						<input
 							type="text"
+							name="title"
 							placeholder="Title"
 							className="w-full p-2 border rounded"
+							onChange={handleChange}
 						/>
 						<textarea
+							name="description"
 							placeholder="Description"
 							className="w-full p-2 border rounded"
+							onChange={handleChange}
 						></textarea>
 						<input
 							type="file"
+							name="image"
 							accept="image/*"
 							className="w-full p-2 border rounded"
+							onChange={handleFileChange}
 						/>
 						<input
 							type="file"
+							name="model3D"
 							accept=".obj,.glb,.stl"
 							className="w-full p-2 border rounded"
+							onChange={handleFileChange}
 						/>
-						<button className="bg-blue-600 text-white px-4 py-2 rounded">
+						<button
+							type="submit"
+							className="bg-blue-600 text-white px-4 py-2 rounded"
+						>
 							Upload Artifact
 						</button>
 					</form>
@@ -74,60 +98,66 @@ export default function UploadsPage() {
 
 				{/* Uploaded Artifacts */}
 				<Card title="Uploaded Artifacts">
-					<table className="w-full text-left border-collapse">
-						<thead>
-							<tr className="border-b">
-								<th className="p-3">Image</th>
-								<th className="p-3">Title</th>
-								<th className="p-3">Description</th>
-								<th className="p-3">3D Model</th>
-								<th className="p-3">Size</th>
-								<th className="p-3">Upload Date</th>
-								<th className="p-3">Status</th>
-								<th className="p-3">Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							{uploads.map((artifact) => (
-								<tr
-									key={artifact.id}
-									className="border-b"
-								>
-									<td className="p-3">
-										<img
-											src={artifact.image}
-											alt={artifact.title}
-											className="h-10 w-10 object-cover rounded"
-										/>
-									</td>
-									<td className="p-3">
-										{artifact.title}
-									</td>
-									<td className="p-3">
-										{artifact.description}
-									</td>
-									<td className="p-3 flex items-center">
-										<Package className="text-gray-600 mr-2" />{' '}
-										{artifact.model}
-									</td>
-									<td className="p-3">
-										{artifact.size}
-									</td>
-									<td className="p-3">
-										{artifact.date}
-									</td>
-									<td className="p-3 text-blue-600">
-										{artifact.status}
-									</td>
-									<td className="p-3 flex space-x-3">
-										<FileText className="text-green-600 cursor-pointer" />
-										<Download className="text-blue-600 cursor-pointer" />
-										<Trash className="text-red-600 cursor-pointer" />
-									</td>
+					{status === 'loading' ? (
+						<p>Loading...</p>
+					) : status === 'failed' ? (
+						<p>Error loading artifacts</p>
+					) : (
+						<table className="w-full text-left border-collapse">
+							<thead>
+								<tr className="border-b">
+									<th className="p-3">Image</th>
+									<th className="p-3">Title</th>
+									<th className="p-3">Description</th>
+									<th className="p-3">3D Model</th>
+									<th className="p-3">Upload Date</th>
+									<th className="p-3">Actions</th>
 								</tr>
-							))}
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								{artifacts?.map((artifact) => (
+									<tr
+										key={artifact._id}
+										className="border-b"
+									>
+										<td className="p-3">
+											<img
+												src={artifact.image}
+												alt={artifact.name}
+												className="h-10 w-10 object-cover rounded"
+											/>
+										</td>
+										<td className="p-3">
+											{artifact.name}
+										</td>
+										<td className="p-3">
+											{artifact.description}
+										</td>
+										<td className="p-3 flex items-center">
+											<Package className="text-gray-600 mr-2" />{' '}
+											<a
+												href={artifact.model3D}
+												download
+												className="text-blue-600"
+											>
+												Download
+											</a>
+										</td>
+										<td className="p-3">
+											{new Date(
+												artifact.createdAt
+											).toLocaleDateString()}
+										</td>
+										<td className="p-3 flex space-x-3">
+											<FileText className="text-green-600 cursor-pointer" />
+											<Download className="text-blue-600 cursor-pointer" />
+											<Trash className="text-red-600 cursor-pointer" />
+										</td>
+									</tr>
+								))}
+							</tbody>
+						</table>
+					)}
 				</Card>
 			</div>
 		</div>
