@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import ArtfactsPage from './pages/ArtfactsPage';
+import ARViewer from './pages/ARViewer';
+import Dashboard from './pages/Dashboard';
 
 function App() {
 	const router = createBrowserRouter([
@@ -14,7 +16,15 @@ function App() {
 		},
 		{
 			path: '/artifacts/ar/:id',
-			element: <ArtfactsPage />,
+			element: <ARViewer />,
+		},
+		{
+			path: '/dashboard',
+			element: <Dashboard />,
+		},
+		{
+			path: '/uploads',
+			element: <Dashboard />,
 		},
 	]);
 	return <RouterProvider router={router} />;
