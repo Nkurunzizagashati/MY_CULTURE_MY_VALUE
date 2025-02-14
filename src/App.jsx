@@ -3,6 +3,7 @@ import HomePage from './pages/HomePage';
 import ArtfactsPage from './pages/ArtfactsPage';
 import ARViewer from './pages/ARViewer';
 import Dashboard from './pages/Dashboard';
+import { Upload } from 'lucide-react';
 
 function App() {
 	const router = createBrowserRouter([
@@ -24,7 +25,7 @@ function App() {
 		},
 		{
 			path: '/uploads',
-			element: <Dashboard />,
+			element: <Upload />,
 		},
 	]);
 	return <RouterProvider router={router} />;
