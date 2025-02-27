@@ -7,11 +7,11 @@ cd rwanda-ar-heritage/frontend
 
 Install dependencies:
 
-npm install
+`npm install`
 
 # or
 
-yarn install
+`yarn install`
 
 Create an .env file and configure it with your Firebase keys:
 
@@ -21,8 +21,4 @@ VITE_FIREBASE_PROJECT_ID=your_project_id
 
 Start the development server:
 
-npm run dev
-
-Access the app in your browser:
-
-http://localhost:5173
+`npm run dev`
