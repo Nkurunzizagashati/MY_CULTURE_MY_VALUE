@@ -15,9 +15,11 @@ Install dependencies:
 
 Create an .env file and configure it with your Firebase keys:
 
+```
 VITE_FIREBASE_API_KEY=your_api_key
 VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
 VITE_FIREBASE_PROJECT_ID=your_project_id
+```
 
 Start the development server:
 
