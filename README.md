@@ -10,12 +10,22 @@ cd rwanda-ar-heritage/frontend
 
 Install dependencies:
 
-`npm install`
+```
+npm install
+```
 
 # or
 
-`yarn install`
+```
+yarn install
+```
 
 Start the development server:
 
-`npm run dev`
+```
+npm run dev
+```
+
+Video Demo: https://vimeo.com/1061046676/c596fecc37?share=copy
+
+Backend repo: https://github.com/Nkurunzizagashati/MCMY-BACKEND
