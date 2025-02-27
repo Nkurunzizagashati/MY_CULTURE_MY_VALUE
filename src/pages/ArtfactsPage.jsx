@@ -8,12 +8,10 @@ import Navbar from '../components/Navbar';
 const ArtifactsPage = () => {
 	const dispatch = useDispatch();
 
-	// Get artifacts from Redux state
 	const { items: artifacts, status } = useSelector(
 		(state) => state.artifacts
 	);
 
-	// Fetch artifacts when the component mounts
 	useEffect(() => {
 		dispatch(fetchArtifacts());
 	}, [dispatch]);
@@ -35,7 +33,6 @@ const ArtifactsPage = () => {
 					</p>
 				)}
 
-				{/* Artifacts Grid */}
 				<div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
 					{artifacts.map((artifact) => (
 						<div

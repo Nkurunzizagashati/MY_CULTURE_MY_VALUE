@@ -269,7 +269,6 @@ export default function UploadsPage() {
 					</form>
 				</Card>
 
-				{/* Uploaded Artifacts */}
 				<Card
 					title="Uploaded Artifacts"
 					className="bg-[#2C2C2C] p-6 rounded-lg text-white"

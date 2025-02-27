@@ -1,5 +1,4 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import HomePage from './pages/HomePage';
 import ArtfactsPage from './pages/ArtfactsPage';
 import ARViewer from './pages/ARViewer';
 import Dashboard from './pages/Dashboard';
@@ -8,8 +7,16 @@ import UsersPage from './pages/UsersPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Home from './pages/Home';
+import { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { fetchArtifacts } from './redux/artifactSlice';
 
 function App() {
+	const dispatch = useDispatch();
+	useEffect(() => {
+		dispatch(fetchArtifacts());
+	}, [dispatch]);
+
 	const router = createBrowserRouter([
 		{
 			path: '/artifacts',
