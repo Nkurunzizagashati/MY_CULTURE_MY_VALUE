@@ -7,13 +7,10 @@ import UploadsPage from './pages/UploadsPage';
 import UsersPage from './pages/UsersPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
+import Home from './pages/Home';
 
 function App() {
 	const router = createBrowserRouter([
-		{
-			path: '/',
-			element: <HomePage />,
-		},
 		{
 			path: '/artifacts',
 			element: <ArtfactsPage />,
@@ -41,6 +38,10 @@ function App() {
 		{
 			path: '/register',
 			element: <RegisterPage />,
+		},
+		{
+			path: '/',
+			element: <Home />,
 		},
 	]);
 	return <RouterProvider router={router} />;

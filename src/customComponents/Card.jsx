@@ -10,7 +10,7 @@ const Card = ({
 }) => {
 	return (
 		<div
-			className={`rounded-xl border bg-white shadow p-4 ${
+			className={`rounded-xl border shadow p-4 ${
 				className || ''
 			}`}
 			{...props}

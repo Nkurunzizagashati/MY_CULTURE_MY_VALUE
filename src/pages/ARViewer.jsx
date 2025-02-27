@@ -3,21 +3,20 @@ import { useLocation } from 'react-router-dom';
 import * as THREE from 'three';
 import { ARButton } from 'three/examples/jsm/webxr/ARButton.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
-import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
 import Navbar from '../components/Navbar';
 
 const ARViewer = () => {
 	const containerRef = useRef(null);
 	const location = useLocation();
 
-	// Extract model URL and description from query params
 	const params = new URLSearchParams(location.search);
 	const modelUrl = params.get('model') || '/models/default.glb';
 	const description =
 		params.get('description') || 'An ancient artifact.';
 
 	let artifactModel = null;
+	let isDragging = false;
+	let previousMousePosition = { x: 0, y: 0 };
 
 	useEffect(() => {
 		const scene = new THREE.Scene();
@@ -35,6 +34,7 @@ const ARViewer = () => {
 			0.1,
 			1000
 		);
+		camera.position.set(0, 1.5, 2);
 		scene.add(camera);
 
 		const renderer = new THREE.WebGLRenderer({
@@ -61,62 +61,51 @@ const ARViewer = () => {
 				scene.add(artifactModel);
 			},
 			undefined,
-			(error) => {
-				console.error('Error loading GLTF model:', error);
-			}
+			(error) => console.error('Error loading GLTF model:', error)
 		);
 
-		const fontLoader = new FontLoader();
-		fontLoader.load(
-			'https://threejs.org/examples/fonts/helvetiker_regular.typeface.json',
-			(font) => {
-				const textMaterial = new THREE.MeshStandardMaterial({
-					color: 0xffffff,
-				});
+		function onMouseDown(event) {
+			isDragging = true;
+			previousMousePosition = {
+				x: event.clientX,
+				y: event.clientY,
+			};
+		}
 
-				// Description Text (Dynamic)
-				const descriptionGeometry = new TextGeometry(
-					description,
-					{
-						font: font,
-						size: 0.03, // Decrease the font size
-						height: 0.005, // Reduce text thickness
-					}
-				);
+		function onMouseUp() {
+			isDragging = false;
+		}
 
-				// Compute text bounding box to center it on the X-axis
-				descriptionGeometry.computeBoundingBox();
-				const textWidth =
-					descriptionGeometry.boundingBox.max.x -
-					descriptionGeometry.boundingBox.min.x;
+		function onMouseMove(event) {
+			if (!isDragging || !artifactModel) return;
 
-				const descriptionMesh = new THREE.Mesh(
-					descriptionGeometry,
-					textMaterial
-				);
+			const deltaX = event.clientX - previousMousePosition.x;
+			const deltaY = event.clientY - previousMousePosition.y;
 
-				// Center the text on the X-axis
-				descriptionMesh.position.set(-textWidth / 2, 0.15, -1);
+			artifactModel.rotation.y += deltaX * 0.01;
+			artifactModel.rotation.x += deltaY * 0.01;
 
-				scene.add(descriptionMesh);
-			}
-		);
+			previousMousePosition = {
+				x: event.clientX,
+				y: event.clientY,
+			};
+		}
 
-		const controller = renderer.xr.getController(0);
-		scene.add(controller);
-
-		controller.addEventListener('selectstart', () => {
+		function onWheel(event) {
 			if (artifactModel) {
-				artifactModel.rotation.y += Math.PI / 4;
+				const scaleFactor = event.deltaY > 0 ? 0.9 : 1.1;
+				artifactModel.scale.multiplyScalar(scaleFactor);
 			}
-		});
+		}
 
 		renderer.setAnimationLoop(() => {
-			if (artifactModel) {
-				artifactModel.rotation.y += 0.01;
-			}
 			renderer.render(scene, camera);
 		});
+
+		window.addEventListener('mousedown', onMouseDown);
+		window.addEventListener('mouseup', onMouseUp);
+		window.addEventListener('mousemove', onMouseMove);
+		window.addEventListener('wheel', onWheel);
 
 		const handleResize = () => {
 			camera.aspect = window.innerWidth / window.innerHeight;
@@ -126,21 +115,37 @@ const ARViewer = () => {
 		window.addEventListener('resize', handleResize);
 
 		return () => {
+			window.removeEventListener('mousedown', onMouseDown);
+			window.removeEventListener('mouseup', onMouseUp);
+			window.removeEventListener('mousemove', onMouseMove);
+			window.removeEventListener('wheel', onWheel);
 			window.removeEventListener('resize', handleResize);
 			renderer.setAnimationLoop(null);
 			if (containerRef.current) {
 				containerRef.current.removeChild(renderer.domElement);
 			}
 		};
-	}, [modelUrl, description]);
+	}, [modelUrl]);
 
 	return (
 		<div>
 			<Navbar />
 			<div
 				ref={containerRef}
-				className="bg-black w-[100vw] h-[100vh]"
-			/>
+				className="bg-[#2C2C2C] w-[100vw] h-[100vh] relative"
+			>
+				{/* Centered horizontally and starts from top vertically */}
+				<div className="absolute top-[15%] left-1/2 transform -translate-x-1/2 pointer-events-none">
+					<section className="bg-white text-center p-6 rounded-2xl shadow-lg max-w-md">
+						<h2 className="text-2xl font-bold text-black mb-4">
+							Artifact Description
+						</h2>
+						<p className="text-lg text-gray-700 font-semibold">
+							{description}
+						</p>
+					</section>
+				</div>
+			</div>
 		</div>
 	);
 };

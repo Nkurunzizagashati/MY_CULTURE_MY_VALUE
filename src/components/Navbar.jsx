@@ -21,21 +21,20 @@ const Navbar = () => {
 	};
 
 	return (
-		<nav className="bg-[#2E4D36] text-white p-6 flex justify-between items-center shadow-lg fixed top-0 left-0 right-0 z-50">
+		<nav className="bg-[#2C2C2C] text-white p-4 md:p-6 flex justify-between items-center shadow-lg fixed left-1/2 transform -translate-x-1/2 rounded-lg z-50 top-0 w-full">
 			<NavLink to="/">
-				<h1 className="text-2xl font-bold">
-					Rwanda AR Heritage
-				</h1>
+				<h1 className="text-2xl font-bold">MyCultureMyValue</h1>
 			</NavLink>
-			<ul className="hidden md:flex space-x-6">
+
+			<ul className="hidden md:flex space-x-6 items-center">
 				<li>
 					<NavLink
 						to="/artifacts"
 						className={({ isActive }) =>
-							`text-xl transition-colors ${
+							`text-xl transition-colors font-bold ${
 								isActive
-									? 'text-[#C2923E]'
-									: 'hover:text-[#C2923E]'
+									? 'text-[#E25822]'
+									: 'hover:text-[#E25822]'
 							}`
 						}
 					>
@@ -48,10 +47,10 @@ const Navbar = () => {
 						<NavLink
 							to="/dashboard"
 							className={({ isActive }) =>
-								`text-xl transition-colors ${
+								`text-xl transition-colors font-bold ${
 									isActive
-										? 'text-[#C2923E]'
-										: 'hover:text-[#C2923E]'
+										? 'text-[#E25822]'
+										: 'hover:text-[#E25822]'
 								}`
 							}
 						>
@@ -63,18 +62,20 @@ const Navbar = () => {
 				{user ? (
 					<li className="relative group">
 						<button className="flex items-center space-x-2">
-							<div className="w-10 h-10 bg-gray-500 text-white rounded-full flex items-center justify-center">
+							<div className="w-10 h-10 bg-gray-500 text-white rounded-full flex items-center justify-center text-lg font-semibold">
 								{user.firstName?.[0] || 'U'}
 								{user.lastName?.[0] || ''}
 							</div>
 						</button>
-						<ul className="absolute right-0 bg-white text-black shadow-md hidden group-hover:block w-32 rounded-lg">
-							<li className="p-2 border-b">
+
+						{/* Dropdown Menu */}
+						<ul className="absolute right-0 mt-2 bg-white text-black shadow-lg hidden group-hover:block w-36 rounded-lg overflow-hidden">
+							<li className="p-3 border-b text-center font-medium">
 								{user.lastName || 'User'}
 							</li>
 							<li>
 								<button
-									className="p-2 w-full text-left hover:bg-gray-200"
+									className="p-3 w-full text-left hover:bg-gray-200 transition"
 									onClick={logoutUser}
 								>
 									Logout
@@ -86,7 +87,13 @@ const Navbar = () => {
 					<li>
 						<NavLink
 							to="/login"
-							className="text-xl hover:text-[#C2923E]"
+							className={({ isActive }) =>
+								`text-xl transition-colors font-bold ${
+									isActive
+										? 'text-[#E25822]'
+										: 'hover:text-[#E25822]'
+								}`
+							}
 						>
 							Login
 						</NavLink>

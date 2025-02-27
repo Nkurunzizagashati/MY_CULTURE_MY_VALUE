@@ -21,12 +21,11 @@ const ArtifactsPage = () => {
 	return (
 		<div>
 			<Navbar />
-			<section className="py-28 px-6 min-h-[100vh]">
-				<h2 className="text-3xl font-bold text-center mb-8">
+			<section className="py-28 px-6 min-h-[100vh] bg-[#2C2C2C]">
+				<h2 className="text-3xl font-bold text-center mb-8 text-white">
 					Cultural Artifacts
 				</h2>
 
-				{/* Loading & Error States */}
 				{status === 'loading' && (
 					<p className="text-center">Loading...</p>
 				)}

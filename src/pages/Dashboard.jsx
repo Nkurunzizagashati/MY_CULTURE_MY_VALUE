@@ -21,34 +21,34 @@ export default function Dashboard() {
 	return (
 		<div>
 			<Navbar />
-			<div className="flex h-screen bg-gray-100 mt-20">
+			<div className="flex h-screen bg-[#2C2C2C] mt-20 text-white">
 				{/* Sidebar */}
-				<div className="w-64 bg-white shadow-lg p-5">
-					<h1 className="text-xl font-bold text-gray-800 mb-6">
+				<div className="w-64 bg-[#2C2C2C] shadow-r-lg border-r-2 p-5">
+					<h1 className="text-xl font-bold text-white mb-6">
 						Dashboard
 					</h1>
 					<div className="space-y-4">
 						<NavLink
 							to="/"
-							className="flex items-center text-gray-700 hover:text-green-500 cursor-pointer"
+							className="flex items-center text-white hover:text-green-500 cursor-pointer"
 						>
 							<Home className="mr-2" /> Home
 						</NavLink>
 						<NavLink
 							to="/users"
-							className="flex items-center text-gray-700 hover:text-green-500 cursor-pointer"
+							className="flex items-center text-white hover:text-green-500 cursor-pointer"
 						>
 							<Users className="mr-2" /> Users
 						</NavLink>
 						<NavLink
 							to="/uploads"
-							className="flex items-center text-gray-700 hover:text-green-500 cursor-pointer"
+							className="flex items-center text-white hover:text-green-500 cursor-pointer"
 						>
 							<Upload className="mr-2" /> Uploads
 						</NavLink>
 						<NavLink
 							to=""
-							className="flex items-center text-gray-700 hover:text-green-500 cursor-pointer"
+							className="flex items-center text-white hover:text-green-500 cursor-pointer"
 						>
 							<Settings className="mr-2" /> Settings
 						</NavLink>
