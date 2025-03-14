@@ -37,31 +37,43 @@ const ArtifactsPage = () => {
 					{artifacts.map((artifact) => (
 						<div
 							key={artifact._id}
-							className="p-4 border rounded-lg shadow-md hover:shadow-xl bg-white"
+							className="p-4 border rounded-lg shadow-md hover:shadow-xl bg-white flex flex-col justify-between"
 						>
-							<img
-								src={artifact.image}
-								alt={artifact.name}
-								className="h-40 w-full object-cover rounded-lg mb-4"
-							/>
-							<h4 className="text-xl font-semibold">
-								{artifact.name}
-							</h4>
-							<p className="text-[#4A6781] text-sm">
-								{artifact.description}
-							</p>
-							<NavLink
-								to={`/artifacts/ar/${
-									artifact._id
-								}?model=${encodeURIComponent(
-									artifact.model3D
-								)}&description=${encodeURIComponent(
-									artifact.description
-								)}`}
-								className="mt-4 px-4 py-2 inline-block bg-[#D86F45] text-white font-semibold rounded-lg shadow-md hover:bg-[#C2923E]"
-							>
-								View in AR
-							</NavLink>
+							<div>
+								<img
+									src={artifact.image}
+									alt={artifact.title_en}
+									className="h-40 w-full object-cover rounded-lg mb-4"
+								/>
+								<h4 className="text-xl font-semibold">
+									Name: {artifact?.title_kin} -
+									{' ' + artifact.title_en}
+								</h4>
+								<p className="text-[#4A6781] text-sm">
+									Description:{' '}
+									{artifact?.description_kin}
+								</p>
+							</div>
+							<div className="flex justify-between mt-4">
+								<NavLink
+									to={`/artifacts/ar/${
+										artifact._id
+									}?model=${encodeURIComponent(
+										artifact.model3D
+									)}&description=${encodeURIComponent(
+										artifact.description
+									)}`}
+									className="px-4 py-2 bg-[#D86F45] text-white font-semibold rounded-lg shadow-md hover:bg-[#C2923E]"
+								>
+									View in AR
+								</NavLink>
+								<NavLink
+									to={`/artifacts/${artifact._id}`}
+									className="px-4 py-2 bg-blue-500 text-white font-semibold rounded-lg shadow-md hover:bg-blue-600"
+								>
+									Learn More
+								</NavLink>
+							</div>
 						</div>
 					))}
 				</div>

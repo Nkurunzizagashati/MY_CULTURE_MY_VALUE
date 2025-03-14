@@ -10,6 +10,8 @@ import Home from './pages/Home';
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import { fetchArtifacts } from './redux/artifactSlice';
+import ArtifactPage from './pages/ArtifactPage';
+import VerifyAccount from './pages/VerifyAccount';
 
 function App() {
 	const dispatch = useDispatch();
@@ -49,6 +51,14 @@ function App() {
 		{
 			path: '/',
 			element: <Home />,
+		},
+		{
+			path: '/artifacts/:id',
+			element: <ArtifactPage />,
+		},
+		{
+			path: '/verify',
+			element: <VerifyAccount />,
 		},
 	]);
 	return <RouterProvider router={router} />;

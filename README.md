@@ -26,6 +26,12 @@ Start the development server:
 npm run dev
 ```
 
+or
+
+```
+yarn run dev
+```
+
 Video Demo: https://vimeo.com/1061046676/c596fecc37?share=copy
 
 Backend repo: https://github.com/Nkurunzizagashati/MCMY-BACKEND

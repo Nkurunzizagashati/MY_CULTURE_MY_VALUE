@@ -12,7 +12,6 @@ export const registerUser = createAsyncThunk(
 				`${API_URL}/register`,
 				userData
 			);
-			localStorage.setItem('user', JSON.stringify(response.data)); // Save user to local storage
 			return response.data;
 		} catch (error) {
 			return rejectWithValue(error.response.data);
