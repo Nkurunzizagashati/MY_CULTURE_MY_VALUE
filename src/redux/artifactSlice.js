@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3002/api/artifacts';
+const API_URL =
+	'https://mcmy-backend-production.up.railway.app/api/artifacts';
 
 // Async action for fetching artifacts
 export const fetchArtifacts = createAsyncThunk(

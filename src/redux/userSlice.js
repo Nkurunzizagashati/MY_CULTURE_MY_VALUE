@@ -1,7 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3002/api/users';
+const API_URL =
+	'https://mcmy-backend-production.up.railway.app/api/users';
 
 // Async action for user registration
 export const registerUser = createAsyncThunk(
