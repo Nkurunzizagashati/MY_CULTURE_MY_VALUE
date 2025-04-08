@@ -1,11 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchArtifacts, addArtifact } from '../redux/artifactSlice';
+import {
+	fetchArtifacts,
+	addArtifact,
+	deleteArtifact,
+} from '../redux/artifactSlice';
 import Card from '../customComponents/Card';
-import { FileText, Trash, Download, Package } from 'lucide-react';
+import { FileText, Trash, Package, Edit } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import { toast } from 'react-toastify';
+import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { Link } from 'react-router-dom';
 
 export default function UploadsPage() {
 	const dispatch = useDispatch();
@@ -29,9 +34,30 @@ export default function UploadsPage() {
 		model3D: null,
 	});
 
-	useEffect(() => {
-		dispatch(fetchArtifacts());
-	}, [dispatch]);
+	const [deletingArtifactId, setDeletingArtifactId] = useState(null);
+	const [showModal, setShowModal] = useState(false);
+	const [selectedArtifactId, setSelectedArtifactId] = useState(null);
+
+	const confirmDelete = (artifactId) => {
+		setSelectedArtifactId(artifactId);
+		setShowModal(true);
+	};
+
+	const handleDelete = async () => {
+		if (!selectedArtifactId) return;
+		setDeletingArtifactId(selectedArtifactId);
+		setShowModal(false);
+
+		try {
+			await dispatch(deleteArtifact(selectedArtifactId)).unwrap();
+			toast.success('Artifact deleted successfully!');
+		} catch (error) {
+			console.log(error);
+			toast.error('Failed to delete artifact.');
+		} finally {
+			setDeletingArtifactId(null);
+		}
+	};
 
 	const handleChange = (e) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -81,6 +107,7 @@ export default function UploadsPage() {
 	return (
 		<div>
 			<Navbar />
+			<ToastContainer position="top-right" autoClose={3000} />
 			<div className="p-6 bg-[#2C2C2C] mt-6">
 				<h2 className="text-2xl font-semibold text-gray-800 mb-6">
 					Artifact Uploads
@@ -187,6 +214,31 @@ export default function UploadsPage() {
 					</form>
 				</Card>
 
+				{showModal && (
+					<div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+						<div className="bg-white p-6 rounded-lg shadow-lg text-center">
+							<p className="text-lg font-semibold mb-4">
+								Are you sure you want to delete this
+								artifact?
+							</p>
+							<div className="flex justify-center space-x-4">
+								<button
+									onClick={() => setShowModal(false)}
+									className="bg-gray-500 text-white px-4 py-2 rounded"
+								>
+									Cancel
+								</button>
+								<button
+									onClick={handleDelete}
+									className="bg-red-600 text-white px-4 py-2 rounded"
+								>
+									Delete
+								</button>
+							</div>
+						</div>
+					</div>
+				)}
+
 				<Card
 					title="Uploaded Artifacts"
 					className="bg-[#2C2C2C] p-6 rounded-lg text-white"
@@ -203,18 +255,6 @@ export default function UploadsPage() {
 									<th className="p-3">
 										Title (Kin / En)
 									</th>
-									<th className="p-3">
-										Description (Kin / En)
-									</th>
-									<th className="p-3">
-										Origin (Kin / En)
-									</th>
-									<th className="p-3">
-										Materials (Kin / En)
-									</th>
-									<th className="p-3">
-										Usage (Kin / En)
-									</th>
 									<th className="p-3">3D Model</th>
 									<th className="p-3">Upload Date</th>
 									<th className="p-3">Actions</th>
@@ -228,36 +268,31 @@ export default function UploadsPage() {
 									>
 										<td className="p-3">
 											<img
-												src={artifact.image}
+												src={
+													artifact.image.includes(
+														'res.cloudinary.com'
+													)
+														? `https://res.cloudinary.com/dhuwnnvuj/image/upload/w_600,q_auto,f_auto/${
+																artifact.image.split(
+																	'image/upload/'
+																)[1]
+														  }`
+														: `https://res.cloudinary.com/dhuwnnvuj/image/upload/w_600,q_auto,f_auto/${artifact.image}`
+												}
 												alt={artifact.title_kin}
 												className="h-10 w-10 object-cover rounded"
 											/>
 										</td>
-										<td className="p-3">
+										<td className="p-3 align-top">
 											<strong>
 												{artifact.title_kin}
-											</strong>{' '}
-											<br /> {artifact.title_en}
+											</strong>
+											{' / '}
+											<strong>
+												{artifact.title_en}
+											</strong>
 										</td>
-										<td className="p-3">
-											{artifact.description_kin}{' '}
-											<br />{' '}
-											{artifact.description_en}
-										</td>
-										<td className="p-3">
-											{artifact.origin_kin} <br />{' '}
-											{artifact.origin_en}
-										</td>
-										<td className="p-3">
-											{artifact.materials_kin}{' '}
-											<br />{' '}
-											{artifact.materials_en}
-										</td>
-										<td className="p-3">
-											{artifact.usage_kin} <br />{' '}
-											{artifact.usage_en}
-										</td>
-										<td className="p-3 flex items-center">
+										<td className="p-3 flex items-center align-top">
 											<Package className="text-gray-400 mr-2" />
 											<a
 												href={artifact.model3D}
@@ -267,15 +302,37 @@ export default function UploadsPage() {
 												Download
 											</a>
 										</td>
-										<td className="p-3">
+										<td className="p-3 align-top">
 											{new Date(
 												artifact.createdAt
 											).toLocaleDateString()}
 										</td>
-										<td className="p-3 flex space-x-3">
+										<td className="p-3 flex space-x-3 align-top">
 											<FileText className="text-green-400 cursor-pointer" />
-											<Download className="text-blue-400 cursor-pointer" />
-											<Trash className="text-red-400 cursor-pointer" />
+											<Link
+												to={`/artifact/edit/${artifact._id}`}
+											>
+												<Edit className="text-blue-400 cursor-pointer" />
+											</Link>
+											<button
+												disabled={
+													deletingArtifactId ===
+													artifact._id
+												}
+												onClick={() =>
+													confirmDelete(
+														artifact._id
+													)
+												}
+												className={`text-red-400 cursor-pointer ${
+													deletingArtifactId ===
+													artifact._id
+														? 'opacity-50 cursor-not-allowed'
+														: ''
+												}`}
+											>
+												<Trash />
+											</button>
 										</td>
 									</tr>
 								))}

@@ -76,3 +76,9 @@
 		@apply bg-background text-foreground;
 	}
 }
+
+.ar-viewer {
+	touch-action: none; /* Stops default zooming & scrolling */
+	-webkit-touch-callout: none; /* Prevents Safari's callout menu */
+	overscroll-behavior: contain; /* Stop scrolling when interacting */
+}

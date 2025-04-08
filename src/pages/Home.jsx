@@ -1,40 +1,26 @@
-import { useSelector } from 'react-redux';
-import { Parallax, ParallaxLayer } from '@react-spring/parallax';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Autoplay } from 'swiper/modules';
-import { FaStar, FaStarHalfAlt } from 'react-icons/fa';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
+import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import SubscribeModal from '../customComponents/SubscribeModal';
+import {
+	addSubscriber,
+	checkSubscriptionStatus,
+	unsubscribeSlice,
+} from '../redux/subscriberSlice';
+import { toast, ToastContainer } from 'react-toastify';
+import { io } from 'socket.io-client';
+import { backendUrl } from '../config';
+
+const socket = io(backendUrl, { autoConnect: false });
 
 const Home = () => {
 	const artifacts = useSelector((state) => state.artifacts.items);
-	const hasEnoughSlides = artifacts.length > 2;
+	const isSubscribed = useSelector(
+		(state) => state.subscribers.isSubscribed
+	);
 
-	const renderStars = (rating) => {
-		const stars = [];
-		for (let i = 0; i < 5; i++) {
-			if (i < rating) {
-				stars.push(
-					<FaStar key={i} className="text-yellow-500" />
-				);
-			} else if (i < rating + 0.5) {
-				stars.push(
-					<FaStarHalfAlt
-						key={i}
-						className="text-yellow-500"
-					/>
-				);
-			} else {
-				stars.push(
-					<FaStar key={i} className="text-gray-300" />
-				);
-			}
-		}
-		return stars;
-	};
+	const dispatch = useDispatch();
 
 	const testimonials = [
 		{
@@ -51,164 +37,175 @@ const Home = () => {
 		},
 	];
 
+	const [isModalOpen, setIsModalOpen] = useState(false);
+	const [bgColor, setBgColor] = useState('#2C2C2C');
+
+	const subscribe = () => {
+		try {
+			dispatch(addSubscriber());
+
+			toast.success('Subscription successful!');
+			setIsModalOpen(false);
+		} catch (error) {
+			toast.error(error);
+		}
+	};
+
+	const unsubscribe = () => {
+		try {
+			console.log('UNSUBSCRIBING ...');
+			dispatch(unsubscribeSlice());
+			toast.info('Unsubscribed successfully');
+			setIsModalOpen(false);
+		} catch (error) {
+			toast.error(error);
+		}
+	};
+
+	useEffect(() => {
+		socket.connect();
+		socket.on('subscriptionChanges', (data) => {
+			console.log(data);
+			dispatch(checkSubscriptionStatus());
+		});
+		dispatch(checkSubscriptionStatus());
+		const handleScroll = () => {
+			const scrollY = window.scrollY;
+			if (scrollY < 400) setBgColor('#2C2C2C');
+			else if (scrollY < 1000) setBgColor('#1A1A1A');
+			else setBgColor('#0E0E0E');
+		};
+		window.addEventListener('scroll', handleScroll);
+
+		return () => {
+			window.removeEventListener('scroll', handleScroll);
+		};
+	}, [dispatch]);
+
 	return (
-		<>
+		<div
+			style={{
+				backgroundColor: bgColor,
+				transition: 'background-color 0.5s ease',
+			}}
+			className="min-h-screen"
+		>
 			<Navbar />
-			<Parallax
-				pages={3}
-				className="h-screen w-full bg-[#2C2C2C]"
+			<ToastContainer position="top-right" autoClose={3000} />
+
+			{/* Hero Section */}
+			<section
+				className="h-screen flex items-center justify-center text-white text-center px-6 bg-cover bg-center bg-fixed"
+				style={{
+					backgroundImage: "url('/akagera.jpg')",
+				}}
 			>
-				{/* Background Image */}
-				<ParallaxLayer
-					offset={0}
-					speed={0.5}
-					className="absolute inset-0 w-full h-full"
-				>
-					<img
-						src="/akagera.jpg"
-						alt="Rwandan Landscape"
-						className="w-full h-full object-cover"
-					/>
-				</ParallaxLayer>
+				<div className="max-w-3xl bg-black/50 p-8 rounded-lg mt-80">
+					<h1 className="text-5xl font-bold">
+						Discover Rwanda&apos;s Cultural Heritage
+					</h1>
+					<p className="mt-4 text-lg">
+						Uncover the timeless beauty of Rwandan
+						artifacts-woven baskets, royal drums, and
+						ancient tools. Each piece carries the legacy of
+						our ancestors, preserving Rwanda&apos;s rich
+						history.
+					</p>
+				</div>
+			</section>
 
-				{/* Hero Section */}
-				<ParallaxLayer
-					offset={0.3}
-					speed={0.1}
-					className="flex justify-center items-center p-10"
-				>
-					<div className="max-w-3xl text-center text-white space-y-6 bg-black bg-opacity-50 p-6 rounded-lg">
-						<h1 className="text-5xl md:text-6xl font-bold drop-shadow-lg">
-							Discover Rwanda’s Cultural Heritage
-						</h1>
-						<p className="text-lg leading-relaxed">
-							Uncover the timeless beauty of Rwandan
-							artifacts—woven baskets, royal drums, and
-							ancient tools. Each piece carries the legacy
-							of our ancestors, preserving Rwanda’s rich
-							history.
-						</p>
-					</div>
-				</ParallaxLayer>
-
-				{/* Featured Artifacts Section */}
-				<ParallaxLayer offset={1} speed={0.5} className="p-10">
-					<div className="max-w-5xl mx-auto text-center bg-[#2C2C2C] bg-opacity-90 p-6 rounded-lg shadow-lg">
-						<h3 className="text-3xl font-bold text-white mb-8">
-							Featured Artifacts
-						</h3>
-
-						<Swiper
-							modules={[Navigation, Pagination, Autoplay]}
-							spaceBetween={20}
-							slidesPerView={1}
-							loop={hasEnoughSlides}
-							autoplay={{
-								delay: 3000,
-								disableOnInteraction: false,
-							}}
-							pagination={{ clickable: true }}
-							navigation={false}
-							breakpoints={{
-								640: { slidesPerView: 1 },
-								768: { slidesPerView: 2 },
-								1024: { slidesPerView: 2 },
-							}}
-							className="w-full"
+			{/* Featured Artifacts Section */}
+			<section className="p-10">
+				<h2 className="text-3xl text-white font-bold text-center mb-8">
+					Featured Artifacts
+				</h2>
+				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+					{artifacts.slice(0, 3).map((artifact) => (
+						<div
+							key={artifact._id}
+							className="relative bg-white p-4 rounded-lg shadow-lg overflow-hidden group"
 						>
-							{artifacts.length > 0 ? (
-								artifacts.map((artifact, index) => (
-									<SwiperSlide key={artifact._id}>
-										<div className="p-4 border rounded-lg shadow-lg hover:shadow-2xl bg-white transition duration-300 flex flex-col h-[380px]">
-											<img
-												src={artifact.image}
-												alt={artifact.name}
-												className="h-40 w-full object-cover rounded-lg mb-4"
-											/>
+							<img
+								src={
+									artifact?.image?.includes(
+										'res.cloudinary.com'
+									)
+										? `https://res.cloudinary.com/dhuwnnvuj/image/upload/w_600,q_auto,f_auto/${
+												artifact.image.split(
+													'image/upload/'
+												)[1]
+										  }`
+										: `https://res.cloudinary.com/dhuwnnvuj/image/upload/w_600,q_auto,f_auto/${artifact.image}`
+								}
+								alt={artifact.title_kin}
+								className="w-full h-48 object-cover rounded-lg"
+							/>
+							<div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-80 transition flex flex-col justify-center items-center opacity-0 text-white group-hover:opacity-100 p-4">
+								<h3 className="text-xl font-semibold">
+									{artifact.title_en}
+								</h3>
+							</div>
+						</div>
+					))}
+				</div>
+			</section>
 
-											<div className="flex-grow flex flex-col justify-between">
-												<h4 className="text-xl font-semibold text-gray-900">
-													{artifact.name}
-												</h4>
-												<p className="text-gray-600 text-sm flex-grow line-clamp-3">
-													{
-														artifact.description
-													}
-												</p>
-
-												{/* Ratings */}
-												<div className="flex items-center justify-center mt-2 space-x-1">
-													{renderStars(
-														(index % 5) + 1
-													)}
-												</div>
-
-												{/* Call to Action */}
-												<button className="mt-3 bg-[#E25822] text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-yellow-600 transition">
-													View Artifact
-												</button>
-											</div>
-										</div>
-									</SwiperSlide>
-								))
-							) : (
-								<p className="text-gray-500">
-									No artifacts available
-								</p>
-							)}
-						</Swiper>
-					</div>
-				</ParallaxLayer>
-
-				{/* User Testimonials Section */}
-				<ParallaxLayer offset={2} speed={0.5} className="p-10">
-					<div className="text-center bg-[#2C2C2C] text-white">
-						<h3 className="text-3xl font-bold mb-6">
-							What Our Users Say
-						</h3>
-						<Swiper
-							modules={[Pagination, Autoplay]}
-							slidesPerView={1}
-							autoplay={{
-								delay: 4000,
-								disableOnInteraction: false,
-							}}
-							pagination={{ clickable: true }}
-							className="w-full max-w-3xl mx-auto"
+			{/* Testimonials Section */}
+			<section className="p-10">
+				<h2 className="text-3xl text-white font-bold text-center mb-8">
+					What Our Users Say
+				</h2>
+				<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+					{testimonials.map((testimonial, index) => (
+						<div
+							key={index}
+							className="bg-white p-6 rounded-lg shadow-lg transition-transform transform hover:scale-105"
 						>
-							{testimonials.map((testimonial, index) => (
-								<SwiperSlide key={index}>
-									<div className="p-6 bg-white text-gray-900 rounded-lg shadow-lg">
-										<p className="italic">
-											“{testimonial.text}”
-										</p>
-										<h4 className="mt-4 font-semibold">
-											- {testimonial.name}
-										</h4>
-									</div>
-								</SwiperSlide>
-							))}
-						</Swiper>
-					</div>
+							<p className="italic">
+								“{testimonial.text}”
+							</p>
+							<h4 className="mt-4 font-semibold">
+								- {testimonial.name}
+							</h4>
+						</div>
+					))}
+				</div>
+			</section>
 
-					{/* Call to Action */}
-					<div className="p-10 bg-[#E25822] text-center text-white mt-40 rounded-lg">
-						<h3 className="text-3xl font-bold mb-4">
-							Join Our Community
-						</h3>
-						<p className="max-w-xl mx-auto mb-6">
-							Become part of a growing community
-							passionate about Rwandan heritage. Stay
-							updated and connect with others!
-						</p>
-						<button className="bg-white text-[#E25822] font-semibold px-6 py-2 rounded-lg hover:bg-gray-200 transition">
-							Subscribe Now
-						</button>
-					</div>
-				</ParallaxLayer>
-			</Parallax>
+			{/* Subscribe Section */}
+			<section className="p-10 bg-[#E25822] text-white text-center rounded-lg mb-10 mx-9">
+				<h2 className="text-3xl font-bold">
+					Subscribe to our newsletter
+				</h2>
+				<p className="max-w-xl mx-auto mt-4">
+					Stay updated and connect with others passionate
+					about Rwandan heritage.
+				</p>
+				<button
+					onClick={() => setIsModalOpen(true)}
+					className="mt-4 bg-white text-[#E25822] font-semibold px-6 py-2 rounded-lg hover:bg-gray-200 transition"
+				>
+					{!isSubscribed ? 'Subscribe Now' : 'Unsubscribe'}
+				</button>
+			</section>
+
+			<SubscribeModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				onConfirm={isSubscribed ? unsubscribe : subscribe}
+				message={
+					isSubscribed
+						? 'Are you sure you want to unsubscribe?'
+						: 'By subscribing, you agree to receive our newsletters via email'
+				}
+				title={
+					isSubscribed
+						? 'Unsubscribe'
+						: 'Subscribe to Newsletter'
+				}
+			/>
 			<Footer />
-		</>
+		</div>
 	);
 };
 
