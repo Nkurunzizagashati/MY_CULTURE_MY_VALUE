@@ -32,6 +32,8 @@ or
 yarn run dev
 ```
 
-Video Demo: https://vimeo.com/1061046676/c596fecc37?share=copy
+Video Demo: https://drive.google.com/file/d/1TRq9aEljyGrU69PCvcG1sxYvssOSPKVg/view?usp=sharing
+
+Deployed Version link: https://mcmv.f-nkurunziz.workers.dev/
 
 Backend repo: https://github.com/Nkurunzizagashati/MCMY-BACKEND
